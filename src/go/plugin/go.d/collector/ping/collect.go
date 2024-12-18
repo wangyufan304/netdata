@@ -46,4 +46,5 @@ func (c *Collector) pingHost(host string, mx map[string]int64, mu *sync.Mutex) {
 	mx[px+"packets_recv"] = int64(stats.PacketsRecv)
 	mx[px+"packets_sent"] = int64(stats.PacketsSent)
 	mx[px+"packet_loss"] = int64(stats.PacketLoss * 1000)
+
 }

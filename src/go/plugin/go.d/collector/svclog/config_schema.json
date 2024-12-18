@@ -1,0 +1,13 @@
+{
+  "jsonSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "log configuration.",
+    "type": "object",
+    "properties": {
+      "log_address": {
+        "type": "string",
+        "description": "The path to the log file"
+      }
+    }
+  }
+}
