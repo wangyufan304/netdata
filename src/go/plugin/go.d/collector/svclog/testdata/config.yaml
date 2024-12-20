@@ -1,0 +1,13 @@
+jobs:
+  - name: dpvs
+    services:
+      - service_name: dpvs
+        log_address: /var/log/dpvs.log
+        rules:
+          d1: New Value
+          d2: New Value
+      - service_name: nginx
+        log_address: /var/log/nginx.log
+        rules:
+          n1: New Value
+          n2: New Value

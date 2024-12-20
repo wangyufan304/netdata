@@ -1,13 +1,43 @@
 {
   "jsonSchema": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "log configuration.",
+    "title": "log configuration",
     "type": "object",
     "properties": {
-      "log_address": {
-        "type": "string",
-        "description": "The path to the log file"
+      "services": {
+        "type": "array",
+        "description": "A list of services, each with its own log address and rules.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "service_name": {
+              "type": "string",
+              "description": "The name of the service that generates the log. This is used to identify which service the log is related to (e.g., 'nginx', 'dpvs', etc.)."
+              
+            },
+            "log_address": {
+              "type": "string",
+              "description": "The file path where the log is stored. It could be an absolute or relative path to the log file (e.g., '/var/log/nginx/access.log')."
+            },
+            "rules": {
+              "type": "object",
+              "description": "A set of rules used to parse the log file. Each rule is identified by a key and its associated value defines the pattern or condition that the log entry should match.",
+              "additionalProperties": {
+                "type": "string",
+                "description": "The rule associated with the log entry. The value could be a regex pattern or a specific condition to match log entries (e.g., matching specific HTTP request types, error levels, or IP addresses)."
+              }
+            }
+          },
+          "required": [
+            "service_name",
+            "log_address",
+            "rules"
+          ]
+        }
       }
-    }
+    },
+    "required": [
+      "services"
+    ]
   }
 }

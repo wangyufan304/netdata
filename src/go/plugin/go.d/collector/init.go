@@ -125,4 +125,5 @@ import (
 	_ "github.com/netdata/netdata/go/plugins/plugin/go.d/collector/x509check"
 	_ "github.com/netdata/netdata/go/plugins/plugin/go.d/collector/zfspool"
 	_ "github.com/netdata/netdata/go/plugins/plugin/go.d/collector/zookeeper"
+	_ "github.com/netdata/netdata/go/plugins/plugin/go.d/collector/svclog"
 )

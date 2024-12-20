@@ -3,12 +3,18 @@ package svclog
 import (
 	"context"
 	_ "embed"
+
 	"github.com/netdata/netdata/go/plugins/plugin/go.d/agent/module"
 	_ "github.com/netdata/netdata/go/plugins/plugin/go.d/pkg/logs"
 )
 
 //go:embed "config_schema.json"
 var configSchema string
+
+// 定义服务文件便宜地址
+var offset_filenam string = "/var/log/service.offset"
+
+var sv_off = make(map[string]int64)
 
 func init() {
 	module.Register("svclog", module.Creator{
@@ -27,23 +33,49 @@ func init() {
 
 func New() *Collector {
 	return &Collector{
+		charts: &module.Charts{},
+		sm:     make(map[string]bool),
 		Config: Config{
-			UpdateEvery: 5,
-			LogPath:     "/var/log/test.log",
+			Services: []Service{
+				{
+					ServiceName: "nginx",
+					LogAddress:  "/var/log/nginx/access.log",
+					Rules: map[string]string{
+						"rule1": "pattern1",
+						"rule2": "pattern2",
+					},
+				},
+				{
+					ServiceName: "dpvs",
+					LogAddress:  "/var/log/nginx/access.log",
+					Rules: map[string]string{
+						"das": "pattern1",
+						"453": "pattern2",
+					},
+				},
+			},
 		},
 	}
 }
 
-type Config struct {
-	UpdateEvery int    `yaml:"update_every,omitempty" json:"update_every"` // 数据收集时间间隔（秒）
-	Vnode       string `yaml:"vnode,omitempty" json:"vnode"`               // 虚拟节点名称
-	LogPath     string `yaml:"log_path,omitempty" json:"log_path"`
-}
+type (
+	Config struct {
+		Services []Service `yaml:"services" json:"services"` // 服务配置的数组
+	}
+
+	// Service 表示每个服务的配置
+	Service struct {
+		ServiceName string            `yaml:"service_name" json:"service_name"` // 服务名称
+		LogAddress  string            `yaml:"log_address" json:"log_address"`   // 日志文件地址
+		Rules       map[string]string `yaml:"rules" json:"rules"`               // 服务日志解析规则
+	}
+)
 
 type Collector struct {
 	module.Base
 	Config `yaml:",inline" json:""`
 	charts *module.Charts
+	sm     map[string]bool
 }
 
 func (c *Collector) Configuration() any {
@@ -51,6 +83,10 @@ func (c *Collector) Configuration() any {
 }
 
 func (c *Collector) Init(ctx context.Context) error {
+	// 读取配置文件
+	for _, v := range c.Services {
+		ReadOffset(v.ServiceName)
+	}
 	return nil
 }
 
@@ -62,6 +98,28 @@ func (c *Collector) Charts() *module.Charts {
 	return c.charts
 }
 
+// func (c *Collector) Charts() *module.Charts {
+// 	return &module.Charts{
+// 		{
+// 			ID:    "random",
+//
+// 			Dims: module.Dims{
+// 				{ID: "random0", Name: "random 0"},
+// 				{ID: "random1", Name: "random 1"},
+// 			},
+// 		},
+// 	}
+// }
+
+// func (c *Collector) Collect(context.Context) map[string]int64 {
+// 	return map[string]int64{
+// 		"error": rand.Int63n(100),
+// 		"info":  rand.Int63n(100),
+// 		"warn":  rand.Int63n(100),
+// 		"total": rand.Int63n(100),
+// 	}
+// }
+
 func (c *Collector) Collect(context.Context) map[string]int64 {
 	mx, err := c.collect()
 	if err != nil {
@@ -72,6 +130,7 @@ func (c *Collector) Collect(context.Context) map[string]int64 {
 		return nil
 	}
 	return mx
+
 }
 
 func (c *Collector) Cleanup(context.Context) {}
